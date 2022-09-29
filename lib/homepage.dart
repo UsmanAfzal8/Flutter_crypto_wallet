@@ -23,14 +23,37 @@ class _HomepageState extends State<Homepage> {
   String seedcheck =
       'swear mind differ battle dolphin stay soldier filter fiber detail uncle decrease';
   List<String> units = ['btc', 'doge', 'bch', 'ltc'];
+  List<String> wallets = [];
+  List<String> transferKey = [];
+  List<String> address = [];
   void initState() {
     // TODO: implement initState
     getValues();
   }
 
+  ethWallet() async {
+    Map<String, dynamic> temp = await WallletWithApi().createETherumWallet();
+    print(temp);
+  }
+
   createWallet() async {
     final Map<String, dynamic> wallet = await WallletWithApi().createWallet();
-    print(wallet);
+    // print(wallet);
+    wallets.add(wallet['btc_wallet']);
+    wallets.add(wallet['doge_wallet']);
+    wallets.add(wallet['bch_wallet']);
+    wallets.add(wallet['ltc_wallet']);
+    print(wallets.length);
+    for (int i = 0; i < 4; i++) {
+      print(units[i] + ': ' + wallets[i]);
+    }
+    // for (int i = 0; i < 4; i++) {
+    //   print(units[i] + ': ' + wallets[i]);
+    // }
+    final Map<String, dynamic> balance =
+        await WallletWithApi().getWalletBalance(wallets);
+    print(balance);
+    wallets.clear();
   }
 
   void getValues() async {
@@ -63,7 +86,7 @@ class _HomepageState extends State<Homepage> {
         title: Text('Crypto '),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton(
               onPressed: () {
@@ -74,7 +97,12 @@ class _HomepageState extends State<Homepage> {
               onPressed: () {
                 createWallet();
               },
-              child: Text('chay wallet')),
+              child: Text('apirone')),
+          ElevatedButton(
+              onPressed: () {
+                ethWallet();
+              },
+              child: Text('Eth wallet')),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[

@@ -1,8 +1,9 @@
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:web3dart/web3dart.dart';
 
 class WallletWithApi {
   static String myWalletId = '';
@@ -20,19 +21,17 @@ class WallletWithApi {
         'type': 'saving',
         'currency': un,
         'callback': {
-          'url': 'ENDPOINT_URL notifications-wallet.php',
+          'url': '${endpointUrl!}notifications-wallet.php',
         }
       };
       try {
-        print('Enter ho giya');
         await http
             .post(Uri.parse(url),
                 headers: requestHeaders, body: jsonEncode(body))
             .then((http.Response value) async {
           if (value.statusCode == 200) {
             var body = jsonDecode(value.body);
-            print('hh');
-            print(body);
+
             String walletId = body['wallet'];
             String transferKey = body['transfer_key'];
             String encryptedWalletId = (walletId);
@@ -64,17 +63,94 @@ class WallletWithApi {
               );
               return addressResponse;
             } catch (e) {
-              print(e);
+              //print(e);
             }
           }
         }).timeout(
           const Duration(seconds: 60),
         );
       } catch (e) {
-        print(e);
+        // print(e);
       }
     }
 
     return encryptedAddMap;
+  }
+
+  var totalBalance;
+  int i = 0;
+  @override
+  // ignore: always_specify_types
+  Future<Map<String, dynamic>> getWalletBalance(List walletIds) async {
+    Map<String, dynamic> balancesList = {};
+
+    for (String walletId in walletIds) {
+      String uni = walletId.substring(0, 3);
+      String unit = uni == 'dog' ? 'doge' : uni;
+      //print('walletIds $walletId');
+      try {
+        await http
+            .get(
+                Uri.parse(
+                  '$url/$walletId/balance',
+                ),
+                headers: requestHeaders)
+            .then((http.Response value) {
+          if (value.statusCode == 200) {
+            var body = jsonDecode(value.body);
+            i++;
+
+            // print('body $body');
+            double available = ((body['available']) / 100000000.00);
+            double total = ((body['total']) / 100000000.00);
+
+            Map<String, double> balance = {
+              'available': available,
+              'total': total,
+            };
+            balancesList[unit] = (balance['available']);
+          }
+        }).timeout(
+          const Duration(seconds: 30),
+        );
+      } catch (e) {
+        print(e);
+      }
+    }
+    totalBalance = balancesList['btc'];
+    return balancesList;
+  }
+
+  Future<Map<String, dynamic>> createETherumWallet() async {
+    String add;
+    Map<String, dynamic> erc20encryptedAdd = {};
+    try {
+      EthereumAddress ethAdd;
+      String privateKey = hexString(64);
+
+      EthPrivateKey address = EthPrivateKey.fromHex(privateKey);
+      ethAdd = await address.extractAddress();
+      add = ethAdd.toString();
+      print(add);
+
+      erc20encryptedAdd = {
+        'erc20_transfer_key': (privateKey),
+        'erc20_address': (add),
+      };
+    } catch (e) {
+      print(e);
+    }
+
+    return erc20encryptedAdd;
+  }
+
+  static const String HEXCHARS = 'abcdef0123456789';
+  String hexString(int strlen) {
+    Random rnd = Random(DateTime.now().millisecondsSinceEpoch);
+    String result = '';
+    for (int i = 0; i < strlen; i++) {
+      result += HEXCHARS[rnd.nextInt(HEXCHARS.length)];
+    }
+    return result;
   }
 }
