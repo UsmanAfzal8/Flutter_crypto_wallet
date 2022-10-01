@@ -38,14 +38,14 @@ class _HomepageState extends State<Homepage> {
 
   createWallet() async {
     final Map<String, dynamic> wallet = await WallletWithApi().createWallet();
-    // print(wallet);
+    print(wallet);
     wallets.add(wallet['btc_wallet']);
     wallets.add(wallet['doge_wallet']);
     wallets.add(wallet['bch_wallet']);
     wallets.add(wallet['ltc_wallet']);
     print(wallets.length);
     for (int i = 0; i < 4; i++) {
-      print(units[i] + ': ' + wallets[i]);
+      //print(units[i] + ': ' + wallets[i]);
     }
     // for (int i = 0; i < 4; i++) {
     //   print(units[i] + ': ' + wallets[i]);

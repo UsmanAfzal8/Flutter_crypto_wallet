@@ -14,7 +14,7 @@ class WallletWithApi {
     'Content-type': 'application/json',
   };
   Future<Map<String, dynamic>> createWallet() async {
-    final Map<String, dynamic> encryptedAddMap = {};
+    final Map<String, dynamic> wallets = {};
     String? endpointUrl = dotenv.env['ENDPOINT_URL'];
     for (String un in units) {
       Map<String, dynamic> body = {
@@ -34,8 +34,6 @@ class WallletWithApi {
 
             String walletId = body['wallet'];
             String transferKey = body['transfer_key'];
-            String encryptedWalletId = (walletId);
-            String encryptedTrxKey = (transferKey);
 
             try {
               http.Response? addressResponse = await http
@@ -49,12 +47,12 @@ class WallletWithApi {
                   String address = body['address'];
                   String encryptedAddress = (address);
 
-                  Map<String, dynamic> encryptedWalletData = {
-                    '${un}_transfer_key': encryptedTrxKey,
-                    '${un}_wallet': encryptedWalletId,
-                    '${un}_address': encryptedAddress,
+                  Map<String, dynamic> WalletData = {
+                    '${un}_transfer_key': transferKey,
+                    '${un}_wallet': walletId,
+                    '${un}_address': address,
                   };
-                  encryptedAddMap.addAll(encryptedWalletData);
+                  wallets.addAll(WalletData);
                 } else {
                   print('error');
                 }
@@ -74,7 +72,7 @@ class WallletWithApi {
       }
     }
 
-    return encryptedAddMap;
+    return wallets;
   }
 
   var totalBalance;
